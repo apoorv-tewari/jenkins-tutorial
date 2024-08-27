@@ -1,21 +1,20 @@
-# Use the official Jenkins LTS image from the Docker Hub
+# Use the official Jenkins LTS image as the base
 FROM jenkins/jenkins:lts
 
-# Switch to root user to install additional tools (if needed)
+# Switch to root user to perform installations
 USER root
 
-# Install any additional packages or dependencies
-# For example, install Maven
-RUN apt-get update && apt-get install -y maven
+# Update package lists and install Python 3 and pip
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Optionally, you can also install additional Python packages if needed
+# RUN pip3 install <package-name>
 
 # Switch back to the Jenkins user
 USER jenkins
 
-# Set up any environment variables or configurations if necessary
-# ENV JAVA_OPTS="-Djava.awt.headless=true"
-
-# Expose the port on which Jenkins will run
-EXPOSE 8080
-
-# Define the default command to run Jenkins
-CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]
+# Define the entrypoint for the Jenkins container (inherited from the base image)
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
